@@ -8,8 +8,10 @@ import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.persistence.HorseDao;
 import at.ac.tuwien.sepr.assignment.individual.type.Sex;
 import java.lang.invoke.MethodHandles;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Types;
 import java.util.Collection;
 import java.util.List;
@@ -18,6 +20,8 @@ import org.slf4j.LoggerFactory;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
+import org.springframework.jdbc.support.KeyHolder;
 import org.springframework.stereotype.Repository;
 
 @Repository
@@ -47,6 +51,9 @@ public class HorseJdbcDao implements HorseDao {
       + "  , breed_id = ?"
       + " WHERE id = ?";
 
+  private static final String SQL_INSERT = "INSERT INTO " + TABLE_NAME
+          + " (name, sex, date_of_birth, height, weight, breed_id)"
+          + " VALUES (?, ?, ?, ?, ?, ?)";
   private final JdbcTemplate jdbcTemplate;
   private final NamedParameterJdbcTemplate jdbcNamed;
 
@@ -113,6 +120,32 @@ public class HorseJdbcDao implements HorseDao {
         .setWeight(horse.weight())
         .setBreedId(horse.breed().id())
         ;
+  }
+
+  public Horse create(HorseDetailDto horse) {
+    LOG.trace("create({})", horse);
+    KeyHolder keyHolder = new GeneratedKeyHolder();
+    jdbcTemplate.update(connection -> {
+      PreparedStatement ps = connection.prepareStatement(SQL_INSERT, Statement.RETURN_GENERATED_KEYS);
+      ps.setString(1, horse.name());
+      ps.setString(2, horse.sex().toString());
+      ps.setDate(3, java.sql.Date.valueOf(horse.dateOfBirth()));
+      ps.setDouble(4, horse.height());
+      ps.setDouble(5, horse.weight());
+      ps.setLong(6, horse.breed().id());
+      return ps;
+    }, keyHolder);
+
+    long newHorseId = keyHolder.getKey().longValue();
+    return new Horse()
+            .setId(newHorseId)
+            .setName(horse.name())
+            .setSex(horse.sex())
+            .setDateOfBirth(horse.dateOfBirth())
+            .setHeight(horse.height())
+            .setWeight(horse.weight())
+            .setBreedId(horse.breed().id())
+            ;
   }
 
 

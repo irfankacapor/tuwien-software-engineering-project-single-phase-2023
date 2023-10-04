@@ -62,6 +62,15 @@ public class HorseServiceImpl implements HorseService {
     return mapper.entityToDetailDto(updatedHorse, breeds);
   }
 
+  @Override
+  public HorseDetailDto create(HorseDetailDto horse) throws ValidationException {
+    LOG.trace("create({})", horse);
+    validator.validateForCreate(horse);
+    Horse newHorse = dao.create(horse);
+    var breeds = breedMapForSingleHorse(newHorse);
+    return mapper.entityToDetailDto(newHorse, breeds);
+  }
+
 
   @Override
   public HorseDetailDto getById(long id) throws NotFoundException {
