@@ -163,6 +163,18 @@ export class HorseCreateEditComponent implements OnInit {
     ? of([])
     :  this.breedService.breedsByName(input, 5);
 
+  delete(id: number): void {
+    this.service.delete(id).subscribe({
+      next: data => {
+        this.router.navigate(['/horses']);
+      },
+      error: error => {
+        console.error('Error deleting horse', error);
+        // TODO show an error message to the user. Include and sensibly present the info from the backend!
+      }
+    });
+  };
+
   public onSubmit(form: NgForm): void {
     console.log('is form valid?', form.valid, this.horse);
     if (form.valid) {
