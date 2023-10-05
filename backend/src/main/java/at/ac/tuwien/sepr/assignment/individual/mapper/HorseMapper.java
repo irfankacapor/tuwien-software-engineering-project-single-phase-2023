@@ -60,7 +60,7 @@ public class HorseMapper {
     }
 
     BreedDto breed = null;
-    if (horse.getBreedId() != null) {
+    if (horse.getBreedId() != null && breeds.get(horse.getBreedId()) != null) {
       breed = Optional.ofNullable(breeds.get(horse.getBreedId()))
               .orElseThrow(() -> new FatalException(
                       "Saved horse with id " + horse.getId() + " refers to non-existing breed with id " + horse.getBreedId()));
