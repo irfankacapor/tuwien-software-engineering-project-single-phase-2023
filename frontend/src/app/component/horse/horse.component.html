@@ -120,7 +120,7 @@
         <td>{{horse.name}}</td>
         <td>{{horse.sex === 'FEMALE' ? 'Female' : 'Male'}}</td>
         <td>{{horse.dateOfBirth.toLocaleDateString()}}</td>
-        <td>{{horse.breed.name}}</td>
+        <td>{{horse.breed?.name || ""}}</td>
         <td>
           <div class="btn-group">
             <a class="btn btn-sm responsive-info-button"

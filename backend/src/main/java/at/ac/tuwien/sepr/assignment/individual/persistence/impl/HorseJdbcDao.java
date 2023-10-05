@@ -33,7 +33,7 @@ public class HorseJdbcDao implements HorseDao {
   private static final String SQL_SELECT_SEARCH = "SELECT  "
           + "    h.id as \"id\", h.name as \"name\", h.sex as \"sex\", h.date_of_birth as \"date_of_birth\""
           + "    , h.height as \"height\", h.weight as \"weight\", h.breed_id as \"breed_id\""
-          + " FROM " + TABLE_NAME + " h JOIN breed b ON (h.breed_id = b.id)"
+          + " FROM " + TABLE_NAME + " h LEFT JOIN breed b ON (h.breed_id = b.id)"
           + " WHERE (:name IS NULL OR UPPER(h.name) LIKE UPPER('%'||:name||'%'))"
           + "  AND (:sex IS NULL OR :sex = sex)"
           + "  AND (:bornEarliest IS NULL OR :bornEarliest <= h.date_of_birth)"
@@ -54,6 +54,10 @@ public class HorseJdbcDao implements HorseDao {
   private static final String SQL_DELETE = "DELETE FROM " + TABLE_NAME
           + " WHERE id = ?";
   private static final String SQL_INSERT = "INSERT INTO " + TABLE_NAME
+          + " (name, sex, date_of_birth, height, weight, breed_id)"
+          + " VALUES (?, ?, ?, ?, ?, ?)";
+
+  private static final String SQL_INSERT_WITHOUT_BREED = "INSERT INTO " + TABLE_NAME
           + " (name, sex, date_of_birth, height, weight, breed_id)"
           + " VALUES (?, ?, ?, ?, ?, ?)";
   private final JdbcTemplate jdbcTemplate;
@@ -93,7 +97,6 @@ public class HorseJdbcDao implements HorseDao {
     }
     var params = new BeanPropertySqlParameterSource(searchParameters);
     params.registerSqlType("sex", Types.VARCHAR);
-
     return jdbcNamed.query(query, params, this::mapRow);
   }
 
@@ -134,20 +137,27 @@ public class HorseJdbcDao implements HorseDao {
       ps.setDate(3, java.sql.Date.valueOf(horse.dateOfBirth()));
       ps.setDouble(4, horse.height());
       ps.setDouble(5, horse.weight());
-      ps.setLong(6, horse.breed().id());
+      if (horse.breed() != null) {
+        ps.setLong(6, horse.breed().id());
+      } else {
+        ps.setNull(6, -1);
+      }
       return ps;
     }, keyHolder);
-
     long newHorseId = keyHolder.getKey().longValue();
-    return new Horse()
+    Horse newHorse = new Horse()
             .setId(newHorseId)
             .setName(horse.name())
             .setSex(horse.sex())
             .setDateOfBirth(horse.dateOfBirth())
             .setHeight(horse.height())
-            .setWeight(horse.weight())
-            .setBreedId(horse.breed().id())
-            ;
+            .setWeight(horse.weight());
+    if (horse.breed() != null) {
+      newHorse.setBreedId(horse.breed().id());
+    } else {
+      newHorse.setBreedId(null);
+    }
+    return newHorse;
   }
 
   @Override

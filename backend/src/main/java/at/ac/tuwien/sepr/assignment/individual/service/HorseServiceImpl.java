@@ -40,6 +40,7 @@ public class HorseServiceImpl implements HorseService {
   @Override
   public Stream<HorseListDto> search(HorseSearchDto searchParameters) {
     var horses = dao.search(searchParameters);
+
     // First get all breed ids…
     var breeds = horses.stream()
         .map(Horse::getBreedId)
@@ -47,7 +48,6 @@ public class HorseServiceImpl implements HorseService {
         .collect(Collectors.toUnmodifiableSet());
     // … then get the breeds all at once.
     var breedsPerId = breedMapForHorses(breeds);
-
     return horses.stream()
         .map(horse -> mapper.entityToListDto(horse, breedsPerId));
   }

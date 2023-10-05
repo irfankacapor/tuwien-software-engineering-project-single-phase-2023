@@ -30,9 +30,12 @@ public class HorseMapper {
       return null;
     }
 
-    var breed = Optional.of(breeds.get(horse.getBreedId()))
+    BreedDto breed = null;
+    if (horse.getBreedId() != null && breeds.get(horse.getBreedId()) != null) {
+      breed = Optional.of(breeds.get(horse.getBreedId()))
         .orElseThrow(() -> new FatalException(
             "Saved horse with id " + horse.getId() + " refers to non-existing breed with id " + horse.getBreedId()));
+    }
 
     return new HorseListDto(
         horse.getId(),
@@ -56,9 +59,12 @@ public class HorseMapper {
       return null;
     }
 
-    var breed = Optional.of(breeds.get(horse.getBreedId()))
-        .orElseThrow(() -> new FatalException(
-            "Saved horse with id " + horse.getId() + " refers to non-existing breed with id " + horse.getBreedId()));
+    BreedDto breed = null;
+    if (horse.getBreedId() != null) {
+      breed = Optional.ofNullable(breeds.get(horse.getBreedId()))
+              .orElseThrow(() -> new FatalException(
+                      "Saved horse with id " + horse.getId() + " refers to non-existing breed with id " + horse.getBreedId()));
+    }
 
     return new HorseDetailDto(
         horse.getId(),
