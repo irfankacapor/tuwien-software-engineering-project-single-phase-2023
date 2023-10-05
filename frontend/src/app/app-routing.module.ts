@@ -7,6 +7,7 @@ import {
 import {HorseComponent} from './component/horse/horse.component';
 import {TournamentCreateComponent} from "./component/tournament/tournament-create/tournament-create.component";
 import {TournamentStandingsComponent} from "./component/tournament/tournament-standings/tournament-standings.component";
+import {HorseDetailsComponent} from "./component/horse/horse-details/horse-details.component";
 
 const routes: Routes = [
   {path: '', redirectTo: 'horses', pathMatch: 'full'},
@@ -14,6 +15,7 @@ const routes: Routes = [
     {path: '', component: HorseComponent},
     {path: 'create', component: HorseCreateEditComponent, data: {mode: HorseCreateEditMode.create}},
     {path: 'edit/:id', component: HorseCreateEditComponent, data: {mode: HorseCreateEditMode.edit}},
+    {path: 'details/:id', component: HorseDetailsComponent},
   ]},
   {path: 'tournaments', children: [
     {path: 'create', component: TournamentCreateComponent},
