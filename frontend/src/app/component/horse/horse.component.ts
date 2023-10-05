@@ -5,6 +5,7 @@ import {Horse, HorseListDto} from '../../dto/horse';
 import {HorseSearch} from '../../dto/horse';
 import {debounceTime, map, Observable, of, Subject} from 'rxjs';
 import {BreedService} from "../../service/breed.service";
+import {Router} from "@angular/router";
 
 @Component({
   selector: 'app-horse',
@@ -59,6 +60,19 @@ export class HorseComponent implements OnInit {
   searchChanged(): void {
     this.searchChangedObservable.next();
   }
+
+  delete(id: number): void {
+    this.service.delete(id).subscribe({
+      next: data => {
+        this.horses = this.horses.filter((horse)=> horse.id !== id);
+        this.notification.success(`Horse with id ${id} was successfully deleted.`);
+      },
+      error: error => {
+        console.error('Error deleting horse', error);
+        // TODO show an error message to the user. Include and sensibly present the info from the backend!
+      }
+    });
+  };
 
   breedSuggestions = (input: string): Observable<string[]> =>
     this.breedService.breedsByName(input, 5)

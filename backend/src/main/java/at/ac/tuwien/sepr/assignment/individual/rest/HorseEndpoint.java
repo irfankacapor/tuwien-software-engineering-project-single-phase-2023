@@ -3,6 +3,7 @@ package at.ac.tuwien.sepr.assignment.individual.rest;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.entity.Horse;
 import at.ac.tuwien.sepr.assignment.individual.exception.ConflictException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.exception.ValidationException;
@@ -12,6 +13,7 @@ import java.util.stream.Stream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -71,6 +73,12 @@ public class HorseEndpoint {
     LOG.info("POST " + BASE_PATH + "/create" + toCreate);
     LOG.debug("Body of request:\n{}", toCreate);
     return service.create(toCreate);
+  }
+
+  @DeleteMapping("/delete/{id}")
+  public HorseDetailDto delete(@PathVariable Long id) throws NotFoundException {
+    LOG.info("DELETE " + BASE_PATH + "/" + id);
+    return service.delete(id);
   }
 
   private void logClientError(HttpStatus status, String message, Exception e) {

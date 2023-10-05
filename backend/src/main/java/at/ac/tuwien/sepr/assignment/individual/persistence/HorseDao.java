@@ -52,4 +52,13 @@ public interface HorseDao {
    * @return the created horse
    */
   Horse create(HorseDetailDto horse);
+
+  /**
+   * Delete a horse from the database
+   *
+   * @param id id of the horse to be deleted
+   * @return the deleted horse
+   * @throws NotFoundException if the Horse with the given ID does not exist in the persistent data store
+   */
+  Horse delete(long id) throws NotFoundException;
 }

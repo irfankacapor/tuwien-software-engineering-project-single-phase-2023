@@ -124,6 +124,7 @@
         <td>
           <div class="btn-group">
             <a class="btn btn-sm responsive-info-button"
+               [routerLink]="['details', horse.id]"
                aria-label="Show horse details">
               <i class="bi bi-info-lg"></i>
             </a>
@@ -131,6 +132,11 @@
                [routerLink]="['edit', horse.id]"
                aria-label="Edit horse">
               <i class="bi bi-pencil"></i>
+            </a>
+            <a class="btn btn-sm responsive-danger-button"
+               (click)="delete(horse.id)"
+               aria-label="Delete horse">
+              <i class="bi bi-trash"></i>
             </a>
           </div>
         </td>

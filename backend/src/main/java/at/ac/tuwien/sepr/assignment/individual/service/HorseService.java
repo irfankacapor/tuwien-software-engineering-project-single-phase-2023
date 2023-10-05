@@ -51,7 +51,16 @@ public interface HorseService {
    *
    * @param horse the horse to be added
    * @return the newly created horse
-   * @throws ValidationException  if the data for the creation of the new horse is not valid
+   * @throws ValidationException if the data for the creation of the new horse is not valid
    */
   HorseDetailDto create(HorseDetailDto horse) throws ValidationException;
+
+  /**
+   *
+   * @param id id of the horse to be deleted
+   * @return the horse that was deleted
+   * @throws NotFoundException if the horse with the id is not found in the database
+   */
+  HorseDetailDto delete(long id) throws NotFoundException;
 }
+

@@ -51,6 +51,8 @@ public class HorseJdbcDao implements HorseDao {
       + "  , breed_id = ?"
       + " WHERE id = ?";
 
+  private static final String SQL_DELETE = "DELETE FROM " + TABLE_NAME
+          + " WHERE id = ?";
   private static final String SQL_INSERT = "INSERT INTO " + TABLE_NAME
           + " (name, sex, date_of_birth, height, weight, breed_id)"
           + " VALUES (?, ?, ?, ?, ?, ?)";
@@ -146,6 +148,14 @@ public class HorseJdbcDao implements HorseDao {
             .setWeight(horse.weight())
             .setBreedId(horse.breed().id())
             ;
+  }
+
+  @Override
+  public Horse delete(long id) throws NotFoundException {
+    LOG.trace("delete horse with id {}", id);
+    Horse deletedHorse = getById(id);
+    jdbcTemplate.update(SQL_DELETE, id);
+    return deletedHorse;
   }
 
 
