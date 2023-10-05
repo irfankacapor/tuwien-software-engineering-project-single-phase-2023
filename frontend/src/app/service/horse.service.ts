@@ -64,13 +64,27 @@ export class HorseService {
   }
 
   /**
+   * Update data of a horse in the system.
+   *
+   * @param horse the data that should be assigned to the horse with the given id
+   * @return an Observable for the created horse
+   */
+  update(horse: Horse): Observable<Horse> {
+    const url: string = `${baseUri}/${horse.id}`
+    return this.http.put<Horse>(
+      url,
+      horse
+    );
+  }
+
+  /**
    * Delete a horse from the system.
    *
    * @param id the horse that should be deleted
    * @return an Observable for the created horse
    */
   delete(id: number): Observable<Horse> {
-    const url = `${baseUri}/delete/${id}`;
+    const url: string = `${baseUri}/delete/${id}`;
     return this.http.delete<Horse>(url);
   }
 

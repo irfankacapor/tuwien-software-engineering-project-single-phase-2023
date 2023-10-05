@@ -22,7 +22,9 @@ public class HorseValidator {
       validationErrors.add("No ID given");
     }
 
-    // TODO this is not complete…
+    if (horse.dateOfBirth().isAfter(LocalDate.now())) {
+      validationErrors.add("Date of birth is in the future");
+    }
 
     if (!validationErrors.isEmpty()) {
       throw new ValidationException("Validation of horse for update failed", validationErrors);
