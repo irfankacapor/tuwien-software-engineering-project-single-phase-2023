@@ -65,7 +65,7 @@ export class HorseComponent implements OnInit {
     this.service.delete(id).subscribe({
       next: data => {
         this.horses = this.horses.filter((horse)=> horse.id !== id);
-        this.notification.success(`Horse with id ${id} was successfully deleted.`);
+        this.notification.success(`Horse was successfully deleted.`);
       },
       error: error => {
         console.error('Error deleting horse', error);
