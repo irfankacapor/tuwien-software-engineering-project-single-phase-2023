@@ -1,0 +1,81 @@
+<div class="d-flex flex-row w-auto">
+  <button class="btn btn-primary mr-1" (click)="reloadTournaments()" aria-label="Reload tournaments">
+    <i class="bi bi-arrow-clockwise"></i>
+    Reload
+  </button>
+  <span style="flex: 1"></span>
+  <a class="btn btn-secondary" routerLink="create" aria-label="New tournament">
+    <i class="bi bi-plus-lg"></i>
+    New tournament
+  </a>
+</div>
+<form class="d-flex flex-row w-auto mb-3" (submit)="reloadTournaments()">
+  <button type="submit" hidden="hidden">submit</button>
+  <div class="flex-grow-1">
+    <label for="searchTournamentName" class="col-form-label">
+      Name
+    </label>
+    <input type="text" id="searchTournamentName" name="searchTournamentName"
+           class="form-control"
+    >
+  </div>
+  <div class="ms-1">
+    <label for="tournamentStartsEarliest" class="col-form-label">
+      Date from:
+    </label>
+    <!-- pattern and placeholder are fallbacks for browser, that use a simple text input for type="date"
+         The date format of the plain HTML date input, in browser that support it is, sadly, not changeable in a cross-browser way
+      -->
+    <input type="date" id="tournamentStartsEarliest" name="tournamentStartsEarliest"
+           pattern="\d{4}-\d{2}-\d{2}"
+           placeholder="yyyy-mm-dd"
+           class="form-control"
+           [(ngModel)]="searchStartDate"
+           (ngModelChange)="searchChanged()"
+    >
+  </div>
+  <div class="ms-1">
+    <label for="searchTournamentEndsLatest" class="col-form-label">
+      Date to:
+    </label>
+    <!-- pattern and placeholder are fallbacks for browser, that use a simple text input for type="date"
+         The date format of the plain HTML date input, in browser that support it is, sadly, not changeable in a cross-browser way
+      -->
+    <input type="date" id="searchTournamentEndsLatest" name="searchTournamentEndsLatest"
+           pattern="\d{4}-\d{2}-\d{2}"
+           placeholder="yyyy-mm-dd"
+           class="form-control"
+           [(ngModel)]="searchEndDate"
+           (ngModelChange)="searchChanged()"
+    >
+  </div>
+</form>
+
+<div class="mt-3">
+  <table class="table table-hover">
+    <thead>
+    <tr>
+      <th>Name</th>
+      <th>Tournament Start Date</th>
+      <th>Tournament End Date</th>
+      <th class="min-width">Actions</th>
+    </tr>
+    </thead>
+    <tbody>
+    <tr *ngFor="let tournament of tournaments" class="center-td">
+      <td>{{tournament.name}}</td>
+      <td>{{tournament.startDate.toLocaleDateString()}}</td>
+      <td>{{tournament.endDate.toLocaleDateString()}}</td>
+      <td>
+        <div class="btn-group">
+          <a class="btn btn-sm responsive-info-button"
+             [routerLink]="['/tournaments', 'standings', tournament.id]"
+             aria-label="Show tournament standings">
+            <i class="bi bi-info-lg"></i>
+          </a>
+        </div>
+      </td>
+    </tr>
+    </tbody>
+  </table>
+</div>

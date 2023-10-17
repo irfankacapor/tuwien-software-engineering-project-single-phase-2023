@@ -1,7 +1,7 @@
 import {Injectable} from '@angular/core';
 import {HttpClient, HttpParams} from '@angular/common/http';
 import {environment} from '../../environments/environment';
-import {map, Observable, throwError} from 'rxjs';
+import {map, Observable, tap, throwError} from 'rxjs';
 import {formatIsoDate} from '../util/date-helper';
 import {
   TournamentCreateDto, TournamentDetailDto, TournamentDetailParticipantDto,
@@ -9,7 +9,7 @@ import {
   TournamentSearchParams,
   TournamentStandingsDto, TournamentStandingsTreeDto
 } from "../dto/tournament";
-import {Horse} from "../dto/horse";
+import {Horse, HorseListDto} from "../dto/horse";
 const baseUri = environment.backendUrl + '/tournaments';
 
 class ErrorDto {
@@ -37,17 +37,25 @@ export class TournamentService {
     if (searchParams.endDate) {
       params = params.append('endDate', formatIsoDate(searchParams.endDate));
     }
-    return this.http.get<TournamentListDto[]>(baseUri, { params });
+    return this.http.get<TournamentListDto[]>(baseUri, { params })
+      .pipe(tap(tournaments => tournaments.map(t => {
+      t.startDate = new Date(t.startDate);
+      t.endDate = new Date(t.endDate);
+    })));
   }
   // \TEMPLATE EXCLUDE END\
 
+  /**
+   * Create a new tournament in the system.
+   *
+   * @param tournament the data for the tournament to be created.
+   * @return an Observable for the created tournament.
+   */
   public create(tournament: TournamentCreateDto): Observable<TournamentDetailDto> {
-      return this.http.post<TournamentDetailDto>(
-          baseUri,
-          tournament
-      );
+    return this.http.post<TournamentDetailDto>(
+        baseUri,
+        tournament
+    );
   }
-
-
 
 }

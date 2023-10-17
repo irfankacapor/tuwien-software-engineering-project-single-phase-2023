@@ -1,6 +1,7 @@
 package at.ac.tuwien.sepr.assignment.individual.entity;
 
 import java.time.LocalDate;
+import java.util.List;
 
 /**
  * Represents a tournament in the persistant data store.
@@ -10,7 +11,7 @@ public class Tournament {
   private String name;
   private LocalDate startDate;
   private LocalDate endDate;
-  private Horse[] participants;
+  private List<TournamentParticipant> participants;
 
   public Long getId() {
     return id;
@@ -48,12 +49,21 @@ public class Tournament {
     return this;
   }
 
-  public Horse[] getParticipants() {
+  public List<TournamentParticipant> getParticipants() {
     return participants;
   }
 
-  public Tournament setParticipants(Horse[] participants) {
+  public Tournament setParticipants(List<TournamentParticipant> participants) {
     this.participants = participants;
     return this;
+  }
+  @Override
+  public String toString() {
+    return "Tournament{"
+        + "id=" + id
+        + ", name='" + name + '\''
+        + ", startDate=" + startDate
+        + ", endDate=" + endDate
+        + '}';
   }
 }

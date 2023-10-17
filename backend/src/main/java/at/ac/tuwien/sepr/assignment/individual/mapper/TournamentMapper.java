@@ -2,8 +2,9 @@ package at.ac.tuwien.sepr.assignment.individual.mapper;
 
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseSelectionDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
-import at.ac.tuwien.sepr.assignment.individual.entity.Horse;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentListDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
+import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
@@ -14,6 +15,27 @@ import java.util.ArrayList;
 @Component
 public class TournamentMapper {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
+
+  /**
+   * Convert a tournament entity object to a {@link TournamentListDto}.
+   *
+   * @param tournament the tournament to convert
+   * @return the converted {@link TournamentListDto}
+   */
+  public TournamentListDto entityToListDto(Tournament tournament) {
+    LOG.trace("entityToListDto({})", tournament);
+    if (tournament == null) {
+      return null;
+    }
+
+    return new TournamentListDto(
+        tournament.getId(),
+        tournament.getName(),
+        tournament.getStartDate(),
+        tournament.getEndDate()
+    );
+  }
+
   /**
    * Convert a tournament entity object to a {@link TournamentDetailDto}.
    *
@@ -27,7 +49,7 @@ public class TournamentMapper {
     }
 
     ArrayList<HorseSelectionDto> participants = new ArrayList<HorseSelectionDto>();
-    for (Horse participant : tournament.getParticipants()) {
+    for (TournamentParticipant participant : tournament.getParticipants()) {
       participants.add(new HorseSelectionDto(participant.getId(), participant.getName(), participant.getDateOfBirth()));
     }
 
@@ -41,4 +63,6 @@ public class TournamentMapper {
       newTournamentParticipants
     );
   }
+
+
 }
