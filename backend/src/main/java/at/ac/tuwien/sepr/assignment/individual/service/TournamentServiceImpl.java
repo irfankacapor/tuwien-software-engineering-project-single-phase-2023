@@ -3,6 +3,8 @@ package at.ac.tuwien.sepr.assignment.individual.service;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
+import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.exception.ValidationException;
 import at.ac.tuwien.sepr.assignment.individual.mapper.TournamentMapper;
@@ -42,5 +44,12 @@ public class TournamentServiceImpl implements TournamentService {
     validator.validateForTournamentCreate(tournament);
     var addedTournament = dao.create(tournament);
     return mapper.entityToDetailDto(addedTournament);
+  }
+
+  @Override
+  public TournamentStandingsDto generateFirstRound(long id) throws NotFoundException, FatalException {
+    LOG.trace("generate first round of tournament {}", id);
+    var standings = dao.generateFirstRound(id);
+    return mapper.entityToStandingsDto(standings);
   }
 }

@@ -1,4 +1,4 @@
-import {Component, Input} from '@angular/core';
+import {Component, Input, OnInit} from '@angular/core';
 import {TournamentDetailParticipantDto, TournamentStandingsTreeDto} from "../../../../dto/tournament";
 import {of} from "rxjs";
 
@@ -13,11 +13,15 @@ enum TournamentBranchPosition {
   templateUrl: './tournament-standings-branch.component.html',
   styleUrls: ['./tournament-standings-branch.component.scss']
 })
-export class TournamentStandingsBranchComponent {
+export class TournamentStandingsBranchComponent implements OnInit {
   protected readonly TournamentBranchPosition = TournamentBranchPosition;
   @Input() branchPosition = TournamentBranchPosition.FINAL_WINNER;
   @Input() treeBranch: TournamentStandingsTreeDto | undefined;
   @Input() allParticipants: TournamentDetailParticipantDto[] = [];
+
+  ngOnInit() {
+
+  }
 
   get isUpperHalf(): boolean {
     return this.branchPosition === TournamentBranchPosition.UPPER;
@@ -46,8 +50,14 @@ export class TournamentStandingsBranchComponent {
   };
 
   public formatParticipant(participant: TournamentDetailParticipantDto | null): string {
-    return participant
-        ? `${participant.name} (${participant.dateOfBirth.toLocaleDateString()})`
-        : "";
+    if (participant) {
+      const dateOfBirth = participant.dateOfBirth instanceof Date
+        ? participant.dateOfBirth
+        : new Date(participant.dateOfBirth);
+
+      return `${participant.name} (${dateOfBirth.toLocaleDateString()})`;
+    } else {
+      return "";
+    }
   }
 }

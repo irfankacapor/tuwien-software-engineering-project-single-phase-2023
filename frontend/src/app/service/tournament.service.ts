@@ -58,4 +58,15 @@ export class TournamentService {
     );
   }
 
+  /**
+   * Generate the first round of matches for a tournament
+   *
+   * @param id of the tournament whose first round matches are generated
+   * @return an Observable of the new tournament standings
+   */
+  public generateFirstRound (id: number): Observable<TournamentStandingsDto> {
+    return this.http.get<TournamentStandingsDto>(
+      `${baseUri}/standings/generate/${id}`
+    );
+  }
 }

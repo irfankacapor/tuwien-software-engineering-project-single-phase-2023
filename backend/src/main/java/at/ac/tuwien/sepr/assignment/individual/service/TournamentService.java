@@ -3,6 +3,8 @@ package at.ac.tuwien.sepr.assignment.individual.service;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
+import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.exception.ValidationException;
 
@@ -31,4 +33,14 @@ public interface TournamentService {
    * @throws NotFoundException when a horse that does not exist in the system is added to the tournament
    */
   TournamentDetailDto create(TournamentDetailDto tournament) throws NotFoundException, ValidationException;
+
+  /**
+   * Generate the first round matches of a tournament.
+   *
+   * @param id the id of the tournament whose first round is wanted.
+   * @return the standings of the tournament.
+   * @throws NotFoundException when there is no tournament with the given id in the system.
+   * @throws FatalException when there is more than one tournament with the given id in the system.
+   */
+  TournamentStandingsDto generateFirstRound(long id) throws NotFoundException, FatalException;
 }

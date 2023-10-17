@@ -3,6 +3,8 @@ package at.ac.tuwien.sepr.assignment.individual.persistence;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
+import at.ac.tuwien.sepr.assignment.individual.entity.TournamentStandings;
+import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 
 import java.util.Collection;
@@ -33,4 +35,21 @@ public interface TournamentDao {
    * @throws NotFoundException when a horse that is not in the system is added to the tournament
    */
   Tournament create(TournamentDetailDto tournament) throws NotFoundException;
+
+  /**
+   * Get the first round matches of a tournament.
+   *
+   * @param id the id of the tournament whose first round matches are wanted.
+   * @return the new standings of the tournament.
+   */
+  TournamentStandings generateFirstRound(long id) throws NotFoundException, FatalException;
+
+  /**
+   * Get the tournament with the given id
+   *
+   * @param id of the tournament to get.
+   * @return the tournament with the given id.
+   */
+  Tournament getById(long id) throws NotFoundException;
+
 }
