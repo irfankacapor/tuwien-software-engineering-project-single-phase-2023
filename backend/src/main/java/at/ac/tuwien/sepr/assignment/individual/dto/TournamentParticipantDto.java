@@ -1,6 +1,7 @@
 package at.ac.tuwien.sepr.assignment.individual.dto;
 
 import java.time.LocalDate;
+import java.util.Objects;
 
 public class TournamentParticipantDto {
 
@@ -59,5 +60,17 @@ public class TournamentParticipantDto {
 
   public void setRoundReached(int roundReached) {
     this.roundReached = roundReached;
+  }
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    TournamentParticipantDto that = (TournamentParticipantDto) o;
+    return horseId == that.horseId;
   }
 }
