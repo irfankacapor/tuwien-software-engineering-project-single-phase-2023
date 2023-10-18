@@ -1,6 +1,5 @@
 package at.ac.tuwien.sepr.assignment.individual.mapper;
 
-import at.ac.tuwien.sepr.assignment.individual.dto.HorseSelectionDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentListDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentParticipantDto;
@@ -54,12 +53,18 @@ public class TournamentMapper {
       return null;
     }
 
-    ArrayList<HorseSelectionDto> participants = new ArrayList<HorseSelectionDto>();
+    ArrayList<TournamentParticipantDto> participants = new ArrayList<>();
     for (TournamentParticipant participant : tournament.getParticipants()) {
-      participants.add(new HorseSelectionDto(participant.getId(), participant.getName(), participant.getDateOfBirth()));
+      participants.add(new TournamentParticipantDto(
+          participant.getId(),
+          participant.getName(),
+          participant.getDateOfBirth(),
+          participant.getEntryNumber(),
+          participant.getRoundReached()));
     }
 
-    HorseSelectionDto[] newTournamentParticipants = participants.toArray(new HorseSelectionDto[0]);
+    List<TournamentParticipantDto> newTournamentParticipants = new ArrayList<>(participants);
+
 
     return new TournamentDetailDto(
       tournament.getId(),

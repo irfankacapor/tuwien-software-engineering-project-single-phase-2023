@@ -1,8 +1,10 @@
 package at.ac.tuwien.sepr.assignment.individual.persistence.impl;
 
 import at.ac.tuwien.sepr.assignment.individual.dto.HorseSelectionDto;
-import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentCreateDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentParticipantDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentStandings;
@@ -39,58 +41,53 @@ public class TournamentJdbcDao implements TournamentDao {
       + " (name, start_date, end_date)"
       + " VALUES (?, ?, ?)";
   private static final String SQL_INSERT_INTO_PARTICIPATION = "INSERT INTO " + PARTICIPATION_TABLE_NAME
-      + " (tournament_id, horse_id, round_reached)"
-      + " VALUES (?, ?, ?)";
-
+      + " (tournament_id, horse_id, round_reached, entry_number)"
+      + " VALUES (?, ?, ?, ?)";
   private static final String SQL_SELECT_SEARCH_TOURNAMENT = "SELECT"
       + " t.id as \"id\", t.name as \"name\", t.start_date as \"start_date\", t.end_date as \"end_date\""
       + " FROM " + TOURNAMENT_TABLE_NAME + " t"
       + " WHERE (:startDate IS NULL OR :startDate <= t.start_date)"
       + " AND (:endDate IS NULL OR :endDate >= t.end_date)";
-
   private static final String SQL_GET_POINTS_FOR_PARTICIPANT = "SELECT "
       + "SUM(points) as total_points "
       + "FROM ("
       + "SELECT "
       + "horse_id, "
       + "CASE "
-      + "WHEN wins = 4 THEN 5 "
-      + "WHEN wins = 3 THEN 3 "
-      + "WHEN wins = 1 THEN 1 "
+      + "WHEN round_reached = 2 THEN 1 "
+      + "WHEN round_reached = 3 THEN 3 "
+      + "WHEN round_reached = 4 THEN 5 "
       + "ELSE 0 "
       + "END as points "
       + "FROM ("
       + "SELECT "
       + "participation.horse_id, "
-      + "COUNT(match.id) as wins "
-      + "FROM participation JOIN match ON participation.tournament_id = match.tournament_id AND participation.horse_id = match.winner_horse_id "
-      + "WHERE participation.tournament_id IN ("
-      + "SELECT id FROM tournament WHERE start_date >= TIMESTAMPADD('YEAR', -1, CURRENT_DATE)"
-      + ") AND participation.horse_id = ? "  // Here is where we use the horse_id
-      + "GROUP BY participation.horse_id, participation.tournament_id"
-      + ") as tournament_wins"
+      + "participation.round_reached "
+      + "FROM participation JOIN tournament ON participation.tournament_id = tournament.id "
+      + "WHERE tournament.start_date >= DATE_TRUNC('year', CURRENT_DATE - INTERVAL '1' YEAR) AND participation.horse_id = ?"
+      + ") as tournament_rounds"
       + ") as horse_points";
-
   private static final String SQL_SELECT_TOURNAMENT_PARTICIPANTS = "SELECT"
       + " p.horse_id as horse_id,"
       + " h.name as name,"
       + " h.date_of_birth as date_of_birth,"
-      + " p.round_reached as round_reached"
+      + " p.round_reached as round_reached,"
+      + " p.entry_number as entry_number"
       + " FROM " + PARTICIPATION_TABLE_NAME + " p"
       + " JOIN horse h ON p.horse_id = h.id"
       + " WHERE p.tournament_id = ?";
-
-
-
   private static final String SQL_SELECT_TOURNAMENT_BY_ID = "SELECT"
       + " t.id as id, t.name as name, t.start_date as start_date, t.end_date as end_date"
       + " FROM " + TOURNAMENT_TABLE_NAME + " t"
       + " WHERE t.id = ?";
+  private static final String SQL_UPDATE_PARTICIPANT = "UPDATE "
+      + PARTICIPATION_TABLE_NAME
+      + " SET round_reached = ?, entry_number = ?"
+      + " WHERE horse_id = ? AND tournament_id = ?";
 
   public TournamentJdbcDao(
       NamedParameterJdbcTemplate jdbcNamed,
-      JdbcTemplate jdbcTemplate,
-      HorseJdbcDao horseJdbcDao) {
+      JdbcTemplate jdbcTemplate) {
     this.jdbcTemplate = jdbcTemplate;
     this.jdbcNamed = jdbcNamed;
   }
@@ -103,7 +100,7 @@ public class TournamentJdbcDao implements TournamentDao {
   }
 
   @Override
-  public Tournament create(TournamentDetailDto tournament) throws NotFoundException {
+  public Tournament create(TournamentCreateDto tournament) throws NotFoundException {
     LOG.trace("create({})", tournament);
     KeyHolder keyHolder = new GeneratedKeyHolder();
 
@@ -124,7 +121,8 @@ public class TournamentJdbcDao implements TournamentDao {
         PreparedStatement ps = connection.prepareStatement(SQL_INSERT_INTO_PARTICIPATION, Statement.RETURN_GENERATED_KEYS);
         ps.setLong(1, newTournamentId);
         ps.setLong(2, participant.id());
-        ps.setLong(3, 0);
+        ps.setInt(3, 0);
+        ps.setInt(4, -1);
         return ps;
       }, keyHolder1);
 
@@ -133,7 +131,8 @@ public class TournamentJdbcDao implements TournamentDao {
           .setId(nextParticipantId)
           .setName(participant.name())
           .setDateOfBirth(participant.dateOfBirth())
-          .setRoundReached(0));
+          .setRoundReached(0)
+          .setEntryNumber(-1));
     }
 
     return new Tournament()
@@ -175,7 +174,6 @@ public class TournamentJdbcDao implements TournamentDao {
     return new TournamentStandings(tournament);
   }
 
-
   @Override
   public Tournament getById(long id) throws NotFoundException, FatalException {
     LOG.trace("getById({})", id);
@@ -191,6 +189,26 @@ public class TournamentJdbcDao implements TournamentDao {
     return tournaments.get(0).setParticipants(participants);
   }
 
+  @Override
+  public TournamentStandings setStandings(TournamentStandingsDto standingsToSet, long id) throws NotFoundException {
+    Tournament tournament = getById(id);
+    if (tournament == null) {
+      throw new NotFoundException("Tournament with given id doesn't exist in the system.");
+    }
+    List<TournamentParticipant> participants = new ArrayList<>();
+    for (TournamentParticipantDto participant : standingsToSet.getParticipants()) {
+      jdbcTemplate.update(SQL_UPDATE_PARTICIPANT, participant.getRoundReached(), participant.getEntryNumber(), participant.getHorseId(), id);
+      participants.add(new TournamentParticipant()
+          .setId(participant.getHorseId())
+          .setName(participant.getName())
+          .setDateOfBirth(participant.getDateOfBirth())
+          .setRoundReached(participant.getRoundReached())
+          .setEntryNumber(standingsToSet.getParticipants().indexOf(participant)));
+    }
+    tournament.setParticipants(participants);
+    return new TournamentStandings(tournament);
+  }
+
   private Tournament mapRowTournament(ResultSet result, int rownum) throws SQLException {
     return new Tournament()
         .setId(result.getLong("id"))
@@ -200,12 +218,19 @@ public class TournamentJdbcDao implements TournamentDao {
   }
 
   private TournamentParticipant mapRowParticipant(ResultSet result, int rownum) throws SQLException {
-    return new TournamentParticipant()
+    TournamentParticipant participant = new TournamentParticipant()
         .setId(result.getLong("horse_id"))
         .setName(result.getString("name"))
         .setDateOfBirth(result.getDate("date_of_birth").toLocalDate())
-        .setEntryNumber(-1)
         .setRoundReached(result.getInt("round_reached"));
+    int entryNumber = result.getInt("entry_number");
+    if (result.wasNull()) {
+      participant.setEntryNumber(-1);
+    } else {
+      participant.setEntryNumber(entryNumber);
+    }
+    return participant;
   }
+
 
 }

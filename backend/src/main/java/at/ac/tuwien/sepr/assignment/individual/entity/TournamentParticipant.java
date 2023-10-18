@@ -6,7 +6,7 @@ public class TournamentParticipant {
   long id;
   String name;
   LocalDate dateOfBirth;
-  long entryNumber;
+  int entryNumber;
   int roundReached;
 
   public long getId() {
@@ -18,7 +18,7 @@ public class TournamentParticipant {
   public LocalDate getDateOfBirth() {
     return dateOfBirth;
   }
-  public long getEntryNumber() {
+  public int getEntryNumber() {
     return entryNumber;
   }
   public int getRoundReached() {
@@ -40,7 +40,7 @@ public class TournamentParticipant {
     this.roundReached = roundReached;
     return this;
   }
-  public TournamentParticipant setEntryNumber(long entryNumber) {
+  public TournamentParticipant setEntryNumber(int entryNumber) {
     this.entryNumber = entryNumber;
     return this;
   }

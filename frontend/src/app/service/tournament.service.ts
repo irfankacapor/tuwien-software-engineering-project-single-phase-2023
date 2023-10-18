@@ -59,6 +59,32 @@ export class TournamentService {
   }
 
   /**
+   * Get the latest standings of a tournament.
+   *
+   * @param id of the tournament whose standings are wanted.
+   * @return an Observable for the standings of the tournament.
+   */
+  public getStandings (id: number): Observable<TournamentStandingsDto> {
+    return this.http.get<TournamentStandingsDto>(
+      `${baseUri}/standings/${id}`
+    );
+  }
+
+  /**
+   * Update the standings of a tournament.
+   *
+   * @param standingsToSet the new standings for the tournament.
+   * @param id of the tournament whose standings were changed.
+   * @return an Observable of the new tournament standings.
+   */
+  setStandings(standingsToSet: TournamentStandingsDto, id: number): Observable<TournamentStandingsDto> {
+    return this.http.put<TournamentStandingsDto>(
+      `${baseUri}/standings/${id}`,
+      standingsToSet
+    );
+  }
+
+  /**
    * Generate the first round of matches for a tournament
    *
    * @param id of the tournament whose first round matches are generated

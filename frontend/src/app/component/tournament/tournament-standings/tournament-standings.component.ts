@@ -27,11 +27,41 @@ export class TournamentStandingsComponent implements OnInit {
   }
 
   public ngOnInit() {
-
+    this.getStandings();
   }
 
   public submit(form: NgForm) {
+    if (form.valid && this.standings != null) {
+      let id: number = Number(this.route.snapshot.paramMap.get('id'))
+      let observable: Observable<TournamentStandingsDto>;
+      observable = this.service.setStandings(this.standings, id);
+      observable.subscribe({
+        next: data => {
+          console.log(data);
+          this.notification.success(`Standings of tournament ${data.name} successfully updated.`);
+        },
+        error: error => {
+          console.error('Error updating standings!');
+          this.notification.error(this.errorFormatter.format(error));
+        }
+      });
+    }
+  }
 
+  public getStandings() {
+    let id: number = Number(this.route.snapshot.paramMap.get('id'))
+    let observable: Observable<TournamentStandingsDto>;
+    observable = this.service.getStandings(id);
+    observable.subscribe({
+      next: data => {
+        console.log(data)
+        this.standings = data;
+        this.notification.success(`Standings of tournament ${data.name} successfully loaded.`);
+      },
+      error: error => {
+        console.error('Error displaying standings!');
+    }
+    })
   }
 
   public generateFirstRound() {
@@ -58,8 +88,8 @@ export class TournamentStandingsComponent implements OnInit {
       return false;
     }
     for (let participant of this.standings.participants) {
-      if (participant.roundReached) {
-        if (participant.roundReached > 0) return true;
+      if (participant.roundReached && participant.roundReached > 0) {
+        return true;
       }
     }
     return false;

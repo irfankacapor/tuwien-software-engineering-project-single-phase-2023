@@ -1,7 +1,8 @@
 package at.ac.tuwien.sepr.assignment.individual.persistence;
 
-import at.ac.tuwien.sepr.assignment.individual.dto.TournamentDetailDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentCreateDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
+import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentStandings;
 import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
@@ -34,7 +35,7 @@ public interface TournamentDao {
    * @return the created tournament
    * @throws NotFoundException when a horse that is not in the system is added to the tournament
    */
-  Tournament create(TournamentDetailDto tournament) throws NotFoundException;
+  Tournament create(TournamentCreateDto tournament) throws NotFoundException;
 
   /**
    * Get the first round matches of a tournament.
@@ -51,5 +52,15 @@ public interface TournamentDao {
    * @return the tournament with the given id.
    */
   Tournament getById(long id) throws NotFoundException;
+
+  /**
+   * Set the new standings of the tournament.
+   *
+   * @param standingsToSet the new standings of the tournament.
+   * @param id the id of the tournament whose standings we are setting.
+   * @return the new standings of the tournament.
+   * @throws NotFoundException when there is no tournament with given id in the system.
+   */
+  TournamentStandings setStandings(TournamentStandingsDto standingsToSet, long id) throws NotFoundException;
 
 }
