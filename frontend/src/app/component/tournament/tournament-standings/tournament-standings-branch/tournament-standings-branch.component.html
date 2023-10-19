@@ -10,6 +10,7 @@
         [branchPosition]="TournamentBranchPosition.UPPER"
         [treeBranch]="treeBranch?.branches?.[0]"
         [allParticipants]="allParticipants"
+        [isReadOnly]="treeBranch.thisParticipant !== null"
         ></app-tournament-standings-branch>
     </div>
     <div class="pb-3">
@@ -17,6 +18,7 @@
         [branchPosition]="TournamentBranchPosition.LOWER"
         [treeBranch]="treeBranch?.branches?.[1]"
         [allParticipants]="allParticipants"
+        [isReadOnly]="treeBranch.thisParticipant !== null"
         ></app-tournament-standings-branch>
     </div>
   </div>
@@ -27,5 +29,6 @@
     [suggestions]="suggestions"
     [(ngModel)]="treeBranch.thisParticipant"
     [formatModel]="formatParticipant"
+    [isReadOnly]="isReadOnly"
     ></app-autocomplete>
 </div>

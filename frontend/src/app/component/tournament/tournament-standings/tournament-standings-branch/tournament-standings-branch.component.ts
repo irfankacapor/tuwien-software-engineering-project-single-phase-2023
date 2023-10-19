@@ -18,6 +18,7 @@ export class TournamentStandingsBranchComponent implements OnInit {
   @Input() branchPosition = TournamentBranchPosition.FINAL_WINNER;
   @Input() treeBranch: TournamentStandingsTreeDto | undefined;
   @Input() allParticipants: TournamentDetailParticipantDto[] = [];
+  @Input() isReadOnly: boolean = false;
 
   ngOnInit() {
 
