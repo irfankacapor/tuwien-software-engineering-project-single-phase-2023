@@ -7,7 +7,6 @@ import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
 import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
-import at.ac.tuwien.sepr.assignment.individual.entity.TournamentStandings;
 import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.persistence.TournamentDao;
@@ -85,9 +84,7 @@ public class TournamentJdbcDao implements TournamentDao {
       + " SET round_reached = ?, entry_number = ?"
       + " WHERE horse_id = ? AND tournament_id = ?";
 
-  public TournamentJdbcDao(
-      NamedParameterJdbcTemplate jdbcNamed,
-      JdbcTemplate jdbcTemplate) {
+  public TournamentJdbcDao(NamedParameterJdbcTemplate jdbcNamed, JdbcTemplate jdbcTemplate) {
     this.jdbcTemplate = jdbcTemplate;
     this.jdbcNamed = jdbcNamed;
   }
@@ -98,12 +95,10 @@ public class TournamentJdbcDao implements TournamentDao {
     var params = new BeanPropertySqlParameterSource(searchParameters);
     return jdbcNamed.query(query, params, this::mapRowTournament);
   }
-
   @Override
   public Tournament create(TournamentCreateDto tournament) throws NotFoundException {
     LOG.trace("create({})", tournament);
     KeyHolder keyHolder = new GeneratedKeyHolder();
-
     jdbcTemplate.update(connection -> {
       PreparedStatement ps = connection.prepareStatement(SQL_INSERT_INTO_TOURNAMENT, Statement.RETURN_GENERATED_KEYS);
       ps.setString(1, tournament.name());
@@ -111,11 +106,9 @@ public class TournamentJdbcDao implements TournamentDao {
       ps.setDate(3, java.sql.Date.valueOf(tournament.endDate()));
       return ps;
     }, keyHolder);
-
     long newTournamentId = keyHolder.getKey().longValue();
     KeyHolder keyHolder1 = new GeneratedKeyHolder();
     List<TournamentParticipant> newTournamentParticipants = new ArrayList<>();
-
     for (HorseSelectionDto participant : tournament.participants()) {
       jdbcTemplate.update(connection -> {
         PreparedStatement ps = connection.prepareStatement(SQL_INSERT_INTO_PARTICIPATION, Statement.RETURN_GENERATED_KEYS);
@@ -125,7 +118,6 @@ public class TournamentJdbcDao implements TournamentDao {
         ps.setInt(4, -1);
         return ps;
       }, keyHolder1);
-
       long nextParticipantId = keyHolder1.getKey().longValue();
       newTournamentParticipants.add(new TournamentParticipant()
           .setId(nextParticipantId)
@@ -134,7 +126,6 @@ public class TournamentJdbcDao implements TournamentDao {
           .setRoundReached(0)
           .setEntryNumber(-1));
     }
-
     return new Tournament()
         .setId(newTournamentId)
         .setName(tournament.name())
@@ -142,38 +133,6 @@ public class TournamentJdbcDao implements TournamentDao {
         .setEndDate(tournament.endDate())
         .setParticipants(newTournamentParticipants);
   }
-
-  @Override
-  public TournamentStandings generateFirstRound(long id) throws NotFoundException, FatalException {
-    Tournament tournament = getById(id);
-    List<TournamentParticipant> participants = tournament.getParticipants();
-    List<TournamentParticipant> sortedParticipants = new ArrayList<>(participants);
-    HashMap<TournamentParticipant, Long> points = new HashMap<>();
-    for (TournamentParticipant participant : participants) {
-      Long tournamentParticipantPoints = jdbcTemplate.queryForObject(SQL_GET_POINTS_FOR_PARTICIPANT, new Object[]{participant.getId()}, Long.class);
-      points.put(participant, (tournamentParticipantPoints != null ? tournamentParticipantPoints : 0));
-    }
-    sortedParticipants.sort((p1, p2) -> {
-      int pointsComparison = points.get(p2).compareTo(points.get(p1));
-      if (pointsComparison != 0) {
-        return pointsComparison;
-      } else {
-        return p1.getName().compareTo(p2.getName());
-      }
-    });
-    List<TournamentParticipant> finalOrder = new ArrayList<>();
-    int size = sortedParticipants.size();
-    for (int i = 0; i < size / 2; i++) {
-      finalOrder.add(sortedParticipants.get(i));
-      finalOrder.add(sortedParticipants.get(size - i - 1));
-    }
-    for (TournamentParticipant participant : participants) {
-      participant.setEntryNumber(finalOrder.indexOf(participant));
-      participant.setRoundReached(1);
-    }
-    return new TournamentStandings(tournament);
-  }
-
   @Override
   public Tournament getById(long id) throws NotFoundException, FatalException {
     LOG.trace("getById({})", id);
@@ -188,9 +147,9 @@ public class TournamentJdbcDao implements TournamentDao {
     }
     return tournaments.get(0).setParticipants(participants);
   }
-
   @Override
-  public TournamentStandings setStandings(TournamentStandingsDto standingsToSet, long id) throws NotFoundException {
+  public Tournament setStandings(TournamentStandingsDto standingsToSet, long id) throws NotFoundException {
+    LOG.trace("set standings of tournament {} as {}", id, standingsToSet);
     Tournament tournament = getById(id);
     if (tournament == null) {
       throw new NotFoundException("Tournament with given id doesn't exist in the system.");
@@ -206,9 +165,13 @@ public class TournamentJdbcDao implements TournamentDao {
           .setEntryNumber(standingsToSet.getParticipants().indexOf(participant)));
     }
     tournament.setParticipants(participants);
-    return new TournamentStandings(tournament);
+    return tournament;
   }
-
+  public int getPointsByParticipantId(long id) {
+    LOG.trace("get points of participant {}", id);
+    int tournamentParticipantPoints = jdbcTemplate.queryForObject(SQL_GET_POINTS_FOR_PARTICIPANT, new Object[]{id}, Integer.class);
+    return tournamentParticipantPoints;
+  }
   private Tournament mapRowTournament(ResultSet result, int rownum) throws SQLException {
     return new Tournament()
         .setId(result.getLong("id"))
@@ -216,7 +179,6 @@ public class TournamentJdbcDao implements TournamentDao {
         .setStartDate(result.getDate("start_date").toLocalDate())
         .setEndDate(result.getDate("end_date").toLocalDate());
   }
-
   private TournamentParticipant mapRowParticipant(ResultSet result, int rownum) throws SQLException {
     TournamentParticipant participant = new TournamentParticipant()
         .setId(result.getLong("horse_id"))
@@ -231,6 +193,4 @@ public class TournamentJdbcDao implements TournamentDao {
     }
     return participant;
   }
-
-
 }

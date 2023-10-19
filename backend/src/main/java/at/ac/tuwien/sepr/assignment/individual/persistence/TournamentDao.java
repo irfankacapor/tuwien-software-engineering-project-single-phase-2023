@@ -4,8 +4,6 @@ import at.ac.tuwien.sepr.assignment.individual.dto.TournamentCreateDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
 import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
-import at.ac.tuwien.sepr.assignment.individual.entity.TournamentStandings;
-import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 
 import java.util.Collection;
@@ -38,14 +36,6 @@ public interface TournamentDao {
   Tournament create(TournamentCreateDto tournament) throws NotFoundException;
 
   /**
-   * Get the first round matches of a tournament.
-   *
-   * @param id the id of the tournament whose first round matches are wanted.
-   * @return the new standings of the tournament.
-   */
-  TournamentStandings generateFirstRound(long id) throws NotFoundException, FatalException;
-
-  /**
    * Get the tournament with the given id
    *
    * @param id of the tournament to get.
@@ -61,6 +51,13 @@ public interface TournamentDao {
    * @return the new standings of the tournament.
    * @throws NotFoundException when there is no tournament with given id in the system.
    */
-  TournamentStandings setStandings(TournamentStandingsDto standingsToSet, long id) throws NotFoundException;
+  Tournament setStandings(TournamentStandingsDto standingsToSet, long id) throws NotFoundException;
 
+  /**
+   * Get the points for a horse in the last 12 months.
+   *
+   * @param id of the horse whose points are needed
+   * @return the number of points of the horse
+   */
+  int getPointsByParticipantId(long id);
 }

@@ -1,8 +1,4 @@
 package at.ac.tuwien.sepr.assignment.individual.dto;
-
-import at.ac.tuwien.sepr.assignment.individual.entity.Tournament;
-import at.ac.tuwien.sepr.assignment.individual.entity.TournamentStandingsTree;
-
 import java.util.List;
 
 public class TournamentStandingsDto {

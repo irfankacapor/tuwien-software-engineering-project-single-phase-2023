@@ -7,6 +7,7 @@ import at.ac.tuwien.sepr.assignment.individual.dto.TournamentParticipantDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentSearchDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsDto;
 import at.ac.tuwien.sepr.assignment.individual.dto.TournamentStandingsTreeDto;
+import at.ac.tuwien.sepr.assignment.individual.entity.TournamentParticipant;
 import at.ac.tuwien.sepr.assignment.individual.exception.FatalException;
 import at.ac.tuwien.sepr.assignment.individual.exception.NotFoundException;
 import at.ac.tuwien.sepr.assignment.individual.exception.ValidationException;
@@ -27,7 +28,6 @@ import java.util.stream.Stream;
 @Service
 public class TournamentServiceImpl implements TournamentService {
   private static final Logger LOG = LoggerFactory.getLogger(MethodHandles.lookup().lookupClass());
-
   private final TournamentMapper mapper;
   private final TournamentDao dao;
   private final TournamentValidator validator;
@@ -42,10 +42,8 @@ public class TournamentServiceImpl implements TournamentService {
   public Stream<TournamentListDto> search(TournamentSearchDto searchParameters) {
     LOG.trace("search({})", searchParameters);
     var tournaments = dao.search(searchParameters);
-    return tournaments.stream()
-        .map(tournament -> mapper.entityToListDto(tournament));
+    return tournaments.stream().map(mapper::entityToListDto);
   }
-
   @Override
   public TournamentDetailDto create(TournamentCreateDto tournament) throws NotFoundException, ValidationException {
     LOG.trace("create({})", tournament);
@@ -53,14 +51,38 @@ public class TournamentServiceImpl implements TournamentService {
     var addedTournament = dao.create(tournament);
     return mapper.entityToDetailDto(addedTournament);
   }
-
   @Override
   public TournamentStandingsDto generateFirstRound(long id) throws NotFoundException, FatalException {
     LOG.trace("generate first round of tournament {}", id);
-    var standings = dao.generateFirstRound(id);
-    return mapper.entityToStandingsDto(standings);
+    var tournament = dao.getById(id);
+    List<TournamentParticipant> participants = tournament.getParticipants();
+    List<TournamentParticipant> sortedParticipants = new ArrayList<>(participants);
+    HashMap<TournamentParticipant, Integer> points = new HashMap<>();
+    for (TournamentParticipant participant : participants) {
+      int tournamentParticipantPoints = dao.getPointsByParticipantId(participant.getId());
+      points.put(participant, tournamentParticipantPoints);
+    }
+    sortedParticipants.sort((p1, p2) -> {
+      int pointsComparison = points.get(p2).compareTo(points.get(p1));
+      if (pointsComparison != 0) {
+        return pointsComparison;
+      } else {
+        return p1.getName().compareTo(p2.getName());
+      }
+    });
+    List<TournamentParticipant> finalOrder = new ArrayList<>();
+    int size = sortedParticipants.size();
+    for (int i = 0; i < size / 2; i++) {
+      finalOrder.add(sortedParticipants.get(i));
+      finalOrder.add(sortedParticipants.get(size - i - 1));
+    }
+    for (TournamentParticipant participant : participants) {
+      participant.setEntryNumber(finalOrder.indexOf(participant));
+      participant.setRoundReached(1);
+    }
+    tournament.setParticipants(finalOrder);
+    return new TournamentStandingsDto(mapper.entityToDetailDto(tournament));
   }
-
   @Override
   public TournamentStandingsDto getStandings(long id) throws NotFoundException, FatalException {
     LOG.trace("get standings of tournament {}", id);
@@ -93,7 +115,6 @@ public class TournamentServiceImpl implements TournamentService {
         tournamentDto.endDate(),
         sortedParticipants));
   }
-
   @Override
   public TournamentStandingsDto setStandings(TournamentStandingsDto standingsToSet, long id) throws ValidationException, NotFoundException {
     LOG.trace("set standings of tournament {} as {}", id, standingsToSet);
@@ -120,11 +141,10 @@ public class TournamentServiceImpl implements TournamentService {
     }
     standingsToSet.setParticipants(updatedTournamentParticipants);
     setRoundReached(standingsToSet);
-    var standings = dao.setStandings(standingsToSet, id);
-    return mapper.entityToStandingsDto(standings);
+    var tournament = dao.setStandings(standingsToSet, id);
+    return new TournamentStandingsDto(mapper.entityToDetailDto(tournament));
   }
-
-  private static int setParticipantEntryNumbersRecursive(TournamentStandingsTreeDto node,
+  private int setParticipantEntryNumbersRecursive(TournamentStandingsTreeDto node,
                                                          int entryNumber,
                                                          List<TournamentParticipantDto> updatedTournamentParticipants) {
     if (node == null) {
@@ -144,8 +164,6 @@ public class TournamentServiceImpl implements TournamentService {
     }
     return entryNumber;
   }
-
-
   private void setRoundReached(TournamentStandingsDto standings) {
     HashMap<Long, Integer> counts = new HashMap<>();
     countRounds(standings.getTree(), counts);
@@ -153,7 +171,6 @@ public class TournamentServiceImpl implements TournamentService {
       participant.setRoundReached(counts.get(participant.getHorseId()) == null ? 0 : counts.get(participant.getHorseId()));
     }
   }
-
   private void countRounds(TournamentStandingsTreeDto tree, Map<Long, Integer> counts) {
     if (tree == null) {
       return;
@@ -168,6 +185,4 @@ public class TournamentServiceImpl implements TournamentService {
       }
     }
   }
-
-
 }
