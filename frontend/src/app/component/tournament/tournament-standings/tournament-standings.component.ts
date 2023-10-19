@@ -41,8 +41,13 @@ export class TournamentStandingsComponent implements OnInit {
           this.notification.success(`Standings of tournament ${data.name} successfully updated.`);
         },
         error: error => {
-          console.error('Error updating standings!');
-          this.notification.error(this.errorFormatter.format(error));
+          console.error('Error updating standings!', error);
+          if (!!error.error.errors) {
+            for (const e of error.error.errors) {
+              this.notification.error(e);
+            }
+          }
+          this.notification.error(error.error.message);
         }
       });
     }
