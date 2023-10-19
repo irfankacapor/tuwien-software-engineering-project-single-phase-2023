@@ -69,6 +69,7 @@ export class HorseDetailsComponent implements OnInit {
       private breedService: BreedService,
       private router: Router,
       private route: ActivatedRoute,
+      private notification: ToastrService,
   ) {
   }
   get sex(): string {
@@ -105,7 +106,12 @@ export class HorseDetailsComponent implements OnInit {
       },
       error: error => {
         console.error('Error deleting horse', error);
-        // TODO show an error message to the user. Include and sensibly present the info from the backend!
+        if (!!error.error.errors) {
+          for (const e of error.error.errors) {
+            this.notification.error(e);
+          }
+        }
+        this.notification.error(error.error.message);
       }
     });
   };
