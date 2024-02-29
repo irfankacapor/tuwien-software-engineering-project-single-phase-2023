@@ -17,7 +17,7 @@ To run, see and test the created application on your own, the best way would be 
    1. `mvn clean package` to compile the backend
    2. `java -Dspring.profiles.active=datagen -jar target/e12124537-0.0.1-SNAPSHOT.jar` to insert the initial test data into the database
    3. `mvn spring-boot:run` to run the server
-3. Navigate back to the root folder and then to ./frontent and run:
+3. Navigate back to the root folder and then to ./frontend and run:
    1. `npm install` to install the required dependencies
    2. `ng serve` to run the frontend
 4. Open your preferred browser and go to: [localhost:4200](localhost:4200) and play around with the application!
