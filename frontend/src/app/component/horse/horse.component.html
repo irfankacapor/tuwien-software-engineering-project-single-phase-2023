@@ -1,24 +1,3 @@
-<!-- SANITY CHECK BANNER
-    This is just for checking, that your setup works.
-    You can – and should – remove this later
-    -->
-<div class="container mt-3 mb-3" *ngIf="bannerError">
-  <div class="alert alert-danger" role="alert">
-    <h4>Error!</h4> {{ bannerError }}
-    <p>Could not load horses.</p>
-    <p>Something is not quite right. Did you start the backend?</p>
-  </div>
-</div>
-
-<div class="container mt-3" *ngIf="!bannerError && horses">
-  <div class="alert alert-success" role="alert">
-    <h4 class="alert-heading">Well done!</h4>
-    <p>Your application is up and running.</p>
-    <p>You should see the current list of horses below.</p>
-  </div>
-</div>
-<!-- END SANITY CHECK BANNER -->
-
 <div class="d-flex flex-row w-auto">
   <button class="btn btn-primary mr-1" (click)="reloadHorses()" aria-label="Reload horses">
     <i class="bi bi-arrow-clockwise"></i>
@@ -61,9 +40,7 @@
     <label for="searchHorseBornEarliest" class="col-form-label">
       Earliest Date Of Birth
     </label>
-    <!-- pattern and placeholder are fallbacks for browser, that use a simple text input for type="date"
-         The date format of the plain HTML date input, in browser that support it is, sadly, not changeable in a cross-browser way
-      -->
+
     <input type="date" id="searchHorseBornEarliest" name="searchHorseBornEarliest"
            pattern="\d{4}-\d{2}-\d{2}"
            placeholder="yyyy-mm-dd"
@@ -76,9 +53,6 @@
     <label for="searchHorseBornLatest" class="col-form-label">
       Latest Date Of Birth
     </label>
-    <!-- pattern and placeholder are fallbacks for browser, that use a simple text input for type="date"
-         The date format of the plain HTML date input, in browser that support it is, sadly, not changeable in a cross-browser way
-      -->
     <input type="date" id="searchHorseBornLatest" name="searchHorseBornLatest"
            pattern="\d{4}-\d{2}-\d{2}"
            placeholder="yyyy-mm-dd"
@@ -134,13 +108,19 @@
               <i class="bi bi-pencil"></i>
             </a>
             <a class="btn btn-sm responsive-danger-button"
-               (click)="delete(horse.id)"
+               (click)="delete(horse)"
                aria-label="Delete horse">
               <i class="bi bi-trash"></i>
             </a>
           </div>
         </td>
+        <app-confirm-delete-dialog
+          *ngIf="horseForDeletion"
+          [deleteWhat]="horseForDeletion.name"
+          (confirm)="delete(horse)"
+        ></app-confirm-delete-dialog>
       </tr>
     </tbody>
   </table>
 </div>
+

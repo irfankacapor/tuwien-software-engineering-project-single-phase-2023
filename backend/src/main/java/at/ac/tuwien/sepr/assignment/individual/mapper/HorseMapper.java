@@ -47,11 +47,11 @@ public class HorseMapper {
   }
 
   /**
-   * Convert a horse entity object to a {@link HorseListDto}.
+   * Convert a horse entity object to a {@link HorseDetailDto}.
    * The given map of owners needs to contain the owner of {@code horse}.
    *
    * @param horse the horse to convert
-   * @return the converted {@link HorseListDto}
+   * @return the converted {@link HorseDetailDto}
    */
   public HorseDetailDto entityToDetailDto(Horse horse, Map<Long, BreedDto> breeds) {
     LOG.trace("entityToDto({})", horse);

@@ -42,7 +42,7 @@ public class TournamentValidator {
         validationErrors.add("One participant can appear only once in the first round.");
       }
       if (!isValidWinner(standingsToSet.getTree())) {
-        validationErrors.add("A winner cannot be set for a match that hasn't finished.");
+        validationErrors.add("A winner must have played in the previous match and the match must have finished!");
       }
     }
     if (!validationErrors.isEmpty()) {
@@ -85,7 +85,10 @@ public class TournamentValidator {
       if (tree.getBranches()[0].getThisParticipant() == null || tree.getBranches()[1].getThisParticipant() == null) {
         return false;
       }
-      return true;
+      if (!(tree.getBranches()[0].getThisParticipant().equals(tree.getThisParticipant())
+          || tree.getBranches()[1].getThisParticipant().equals(tree.getThisParticipant()))) {
+        return false;
+      }
     }
     return isValidWinner(tree.getBranches()[0]) && isValidWinner(tree.getBranches()[1]);
   }

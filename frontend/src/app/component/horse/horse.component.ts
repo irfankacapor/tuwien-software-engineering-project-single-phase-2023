@@ -19,7 +19,7 @@ export class HorseComponent implements OnInit {
   searchParams: HorseSearch = {};
   searchBornEarliest: string | null = null;
   searchBornLatest: string | null = null;
-  horseForDeletion: Horse | undefined;
+  horseForDeletion: HorseListDto | undefined;
   searchChangedObservable = new Subject<void>();
 
   constructor(
@@ -61,10 +61,18 @@ export class HorseComponent implements OnInit {
     this.searchChangedObservable.next();
   }
 
-  delete(id: number): void {
-    this.service.delete(id).subscribe({
+  delete(horse: HorseListDto): void {
+    this.horseForDeletion = horse;
+  }
+
+  cancelDelete(): void {
+    this.horseForDeletion = undefined;
+  }
+
+  confirmDelete(): void {
+    this.service.delete(this.horseForDeletion?.id as number).subscribe({
       next: data => {
-        this.horses = this.horses.filter((horse)=> horse.id !== id);
+        this.horses = this.horses.filter((horse)=> horse.id !== this.horseForDeletion?.id as number);
         this.notification.success(`Horse was successfully deleted.`);
       },
       error: error => {
